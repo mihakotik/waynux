@@ -1,0 +1,153 @@
+name: Waynux CI / Live ISO Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      build_iso:
+        description: 'Build bootable Live ISO image'
+        required: true
+        type: boolean
+        default: true
+      clean_sources:
+        description: 'Force clean download of sources (ignore cache)'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Lint & Validate Metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate scripts, packages and licenses
+        run: make validate
+
+  build:
+    name: Build Base System & Live ISO
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        run: |
+          echo "==> Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/powershell
+          echo "==> Disk space after cleanup:"
+          df -h
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            bubblewrap \
+            build-essential \
+            bison \
+            flex \
+            texinfo \
+            gawk \
+            bc \
+            libelf-dev \
+            libssl-dev \
+            libgmp-dev \
+            libmpfr-dev \
+            libmpc-dev \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            xorriso \
+            mtools \
+            cpio \
+            wget \
+            curl \
+            rsync
+
+      - name: Configure build environment & permissions
+        run: |
+          # Allow unprivileged user namespaces in bubblewrap (required on Ubuntu 24.04+)
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+
+          # Create directories and grant user permissions
+          sudo mkdir -p /mnt/waynux /sources /logs /tmp/waynux-build
+          sudo chown -R "$USER:$USER" /mnt/waynux /sources /logs /tmp/waynux-build
+
+      - name: Cache source archives
+        if: ${{ !inputs.clean_sources }}
+        uses: actions/cache@v4
+        with:
+          path: /sources
+          key: waynux-sources-${{ hashFiles('packages/**/sources', 'packages/**/checksums', 'config/sources.lock') }}
+          restore-keys: |
+            waynux-sources-
+
+      - name: Bootstrap base system
+        run: make bootstrap
+
+      - name: Verify root filesystem
+        run: |
+          echo "==> Checking bootstrapped root filesystem:"
+          ls -la /mnt/waynux
+          ls -la /mnt/waynux/boot
+          if [ ! -d "/mnt/waynux/bin" ] && [ ! -d "/mnt/waynux/usr/bin" ]; then
+            echo "[!] Essential binaries directory missing in /mnt/waynux"
+            exit 1
+          fi
+
+      - name: Build Live ISO
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_iso }}
+        run: |
+          make iso
+          ls -lh waynux.iso
+          sha256sum waynux.iso > waynux.iso.sha256
+          md5sum waynux.iso > waynux.iso.md5
+          echo "ISO_BUILT=true" >> "$GITHUB_ENV"
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: waynux-build-logs-${{ github.sha }}
+          path: /logs/*.log
+          if-no-files-found: ignore
+
+      - name: Upload Live ISO
+        if: env.ISO_BUILT == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: waynux-live-iso
+          path: |
+            waynux.iso
+            waynux.iso.sha256
+            waynux.iso.md5
+          retention-days: 14
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') && env.ISO_BUILT == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            waynux.iso
+            waynux.iso.sha256
+            waynux.iso.md5
+          generate_release_notes: true

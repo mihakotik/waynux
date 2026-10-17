@@ -2,7 +2,7 @@
 set -e
 
 # Waynux ISO Builder Script
-# Creates a bootable Live ISO using GRUB and linux-libre
+# Creates a bootable Live ISO using GRUB and Linux kernel
 
 WAYNUX_ROOT="${WAYNUX_ROOT:-/mnt/waynux}"
 ISO_OUTPUT="${ISO_OUTPUT:-waynux.iso}"

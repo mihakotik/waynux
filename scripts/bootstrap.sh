@@ -41,7 +41,7 @@ binutils:1
 gcc:1
 glibc:1
 gcc:2
-linux-libre:1
+linux:1
 make:1
 diffutils:1
 findutils:1
@@ -101,7 +101,7 @@ for step in $BUILD_STEPS; do
     fi
 
     if [ "$pkg" = "glibc" ]; then
-        download_source "https://linux-libre.fsfla.org/pub/linux-libre/releases/6.8-gnu/linux-libre-6.8-gnu.tar.xz" "$WAYNUX_SOURCES"
+        download_source "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.8.tar.xz" "$WAYNUX_SOURCES"
     fi
 
     if [ -f "$PKG_DIR/checksums" ]; then

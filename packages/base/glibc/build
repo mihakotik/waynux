@@ -6,7 +6,7 @@ if [ ! -d "$DESTDIR/usr/include/linux" ]; then
     echo "--> Installing Linux API headers for glibc..."
     mkdir -p /tmp/linux-headers-build
     cd /tmp/linux-headers-build
-    tar -xf /sources/linux-libre-6.8-gnu.tar.xz
+    tar -xf /sources/linux-6.8.tar.xz
     cd linux-*
     make mrproper
     make headers_install INSTALL_HDR_PATH="$DESTDIR/usr"

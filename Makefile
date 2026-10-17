@@ -5,9 +5,13 @@ WAYNUX_SOURCES ?= /sources
 WAYNUX_LOGS ?= /logs
 ISO_OUTPUT ?= waynux.iso
 
-.PHONY: all bootstrap iso chroot clean help
+.PHONY: all bootstrap iso chroot clean validate help
 
 all: help
+
+validate:
+	@echo "==> Validating package metadata and scripts..."
+	sh scripts/validate.sh
 
 bootstrap:
 	@echo "==> Starting base system bootstrap build..."
@@ -31,6 +35,7 @@ help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Available targets:"
+	@echo "  make validate    - Validate package metadata, licenses, and scripts"
 	@echo "  make bootstrap   - Build base system (LFS-style) using bwrap"
 	@echo "  make iso         - Build bootable Live ISO (waynux.iso)"
 	@echo "  make chroot      - Enter isolated system environment"

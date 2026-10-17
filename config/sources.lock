@@ -1,7 +1,7 @@
 binutils 2.42
 gcc 13.2.0
 glibc 2.39
-linux-libre 6.8
+linux 6.8
 make 4.4.1
 grep 3.11
 sed 4.9
