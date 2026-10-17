@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+tar -xf /sources/gawk-5.3.0.tar.xz
+cd gawk-5.3.0
+
+./configure --prefix=/usr
+make -j"$(nproc)"
+make DESTDIR="$DESTDIR" install
+
+# Remove unneeded docs
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

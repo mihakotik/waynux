@@ -1,0 +1,39 @@
+#!/bin/sh
+set -e
+
+# GCC Build Script (LFS-style)
+# Supports PASS=1 (initial C compiler) and PASS=2 (C, C++ compiler)
+PASS="${PASS:-2}"
+
+tar -xf /sources/gcc-13.2.0.tar.xz
+cd gcc-13.2.0
+
+mkdir -p build
+cd build
+
+if [ "$PASS" = "1" ]; then
+    echo "--> GCC Pass 1: C compiler only"
+    ../configure \
+        --prefix=/usr \
+        --enable-languages=c \
+        --disable-multilib \
+        --disable-bootstrap \
+        --disable-nls \
+        --disable-threads \
+        --disable-shared
+    make -j"$(nproc)"
+    make DESTDIR="$DESTDIR" install
+else
+    echo "--> GCC Pass 2: C and C++ compiler"
+    ../configure \
+        --prefix=/usr \
+        --enable-languages=c,c++ \
+        --disable-multilib \
+        --disable-bootstrap \
+        --disable-nls
+    make -j"$(nproc)"
+    make DESTDIR="$DESTDIR" install
+fi
+
+# Clean up documentation
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

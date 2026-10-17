@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+tar -xf /sources/grub-2.12.tar.xz
+cd grub-2.12
+
+./configure \
+    --prefix=/usr \
+    --sbindir=/usr/sbin \
+    --sysconfdir=/etc \
+    --disable-werror \
+    --target=x86_64 \
+    --with-platform=pc
+
+make -j"$(nproc)"
+make DESTDIR="$DESTDIR" install
+
+# Remove unneeded docs
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

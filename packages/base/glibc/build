@@ -1,0 +1,36 @@
+#!/bin/sh
+set -e
+
+# Linux Headers requirement for glibc
+if [ ! -d "$DESTDIR/usr/include/linux" ]; then
+    echo "--> Installing Linux API headers for glibc..."
+    mkdir -p /tmp/linux-headers-build
+    cd /tmp/linux-headers-build
+    tar -xf /sources/linux-libre-6.8-gnu.tar.xz
+    cd linux-*
+    make mrproper
+    make headers_install INSTALL_HDR_PATH="$DESTDIR/usr"
+    cd /tmp
+    rm -rf /tmp/linux-headers-build
+fi
+
+cd /tmp
+tar -xf /sources/glibc-2.39.tar.xz
+cd glibc-2.39
+
+mkdir -p build
+cd build
+
+../configure \
+    --prefix=/usr \
+    --enable-kernel=4.19 \
+    --disable-nls \
+    --disable-werror \
+    --enable-stack-protector=strong \
+    libc_cv_slibdir=/usr/lib
+
+make -j"$(nproc)"
+make DESTDIR="$DESTDIR" install
+
+# Clean up documentation
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

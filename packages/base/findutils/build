@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+tar -xf /sources/findutils-4.9.0.tar.xz
+cd findutils-4.9.0
+
+./configure --prefix=/usr --localstatedir=/var/lib/locate
+make -j"$(nproc)"
+make DESTDIR="$DESTDIR" install
+
+# Remove unneeded docs
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

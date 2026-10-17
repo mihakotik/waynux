@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+tar -xf /sources/linux-libre-6.8-gnu.tar.xz
+cd linux-*
+
+make mrproper
+make defconfig
+make -j"$(nproc)" bzImage
+make -j"$(nproc)" modules
+
+mkdir -p "$DESTDIR/boot"
+cp -v arch/x86/boot/bzImage "$DESTDIR/boot/vmlinuz-6.8-waynux"
+make INSTALL_MOD_PATH="$DESTDIR" modules_install
+make INSTALL_HDR_PATH="$DESTDIR/usr" headers_install
+
+# Clean up documentation
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

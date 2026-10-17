@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+tar -xf /sources/grep-3.11.tar.xz
+cd grep-3.11
+
+./configure --prefix=/usr
+make -j"$(nproc)"
+make DESTDIR="$DESTDIR" install
+
+# Remove unneeded docs
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

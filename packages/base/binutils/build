@@ -1,0 +1,24 @@
+#!/bin/sh
+set -e
+
+tar -xf /sources/binutils-2.42.tar.xz
+cd binutils-2.42
+
+mkdir -p build
+cd build
+
+../configure \
+    --prefix=/usr \
+    --disable-nls \
+    --disable-werror \
+    --enable-gold \
+    --enable-ld=default \
+    --enable-plugins \
+    --enable-shared \
+    --disable-multilib
+
+make -j"$(nproc)"
+make DESTDIR="$DESTDIR" install
+
+# Remove unneeded docs
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc

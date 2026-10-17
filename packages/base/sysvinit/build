@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+tar -xf /sources/sysvinit-3.08.tar.xz
+cd sysvinit-3.08
+
+make -j"$(nproc)" -C src
+make -C src ROOT="$DESTDIR" DISTRO=Waynux install
+
+# Remove unneeded docs
+rm -rf "$DESTDIR"/usr/share/man "$DESTDIR"/usr/share/info "$DESTDIR"/usr/share/doc
