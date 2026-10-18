@@ -18,6 +18,9 @@ cd /tmp
 tar -xf /sources/glibc-2.39.tar.xz
 cd glibc-2.39
 
+# Fix GCC inlining error in syslog.c under GCC 14
+sed -i 's/syslog (INTERNALLOG/__syslog (INTERNALLOG/' misc/syslog.c
+
 mkdir -p build
 cd build
 
