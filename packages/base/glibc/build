@@ -24,13 +24,22 @@ sed -i 's/syslog (INTERNALLOG/__syslog (INTERNALLOG/' misc/syslog.c
 mkdir -p build
 cd build
 
+echo "CFLAGS += -U_FORTIFY_SOURCE" > configparms
+echo "CPPFLAGS += -U_FORTIFY_SOURCE" >> configparms
+
+export CFLAGS="-O2 -U_FORTIFY_SOURCE"
+export CXXFLAGS="-O2 -U_FORTIFY_SOURCE"
+export CPPFLAGS="-U_FORTIFY_SOURCE"
+
 ../configure \
     --prefix=/usr \
     --enable-kernel=4.19 \
     --disable-nls \
     --disable-werror \
     --enable-stack-protector=strong \
-    libc_cv_slibdir=/usr/lib
+    libc_cv_slibdir=/usr/lib \
+    CFLAGS="-O2 -U_FORTIFY_SOURCE" \
+    CXXFLAGS="-O2 -U_FORTIFY_SOURCE"
 
 make -j"$(nproc)"
 make DESTDIR="$DESTDIR" install
