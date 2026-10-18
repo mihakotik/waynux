@@ -25,7 +25,7 @@ chroot:
 	WAYNUX_ROOT="$(WAYNUX_ROOT)" sh scripts/chroot-enter.sh
 clean:
 	@echo "==> Cleaning temporary build files..."
-	rm -rf /tmp/waynux-build /tmp/waynux-iso
+	rm -rf /mnt/waynux-build /var/tmp/waynux-build /tmp/waynux-build /tmp/waynux-iso
 	rm -f $(ISO_OUTPUT)
 	@echo "==> Cleaned."
 

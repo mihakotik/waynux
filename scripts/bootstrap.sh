@@ -7,7 +7,12 @@ set -e
 WAYNUX_ROOT="${WAYNUX_ROOT:-/mnt/waynux}"
 WAYNUX_SOURCES="${WAYNUX_SOURCES:-/sources}"
 WAYNUX_LOGS="${WAYNUX_LOGS:-/logs}"
-WAYNUX_BUILD_TMP="${WAYNUX_BUILD_TMP:-/tmp/waynux-build}"
+if [ -d "/mnt" ]; then
+    DEFAULT_BUILD_TMP="/mnt/waynux-build"
+else
+    DEFAULT_BUILD_TMP="/var/tmp/waynux-build"
+fi
+WAYNUX_BUILD_TMP="${WAYNUX_BUILD_TMP:-$DEFAULT_BUILD_TMP}"
 
 mkdir -p "$WAYNUX_ROOT" "$WAYNUX_SOURCES" "$WAYNUX_LOGS" "$WAYNUX_BUILD_TMP"
 
@@ -130,7 +135,7 @@ for step in $BUILD_STEPS; do
     fi
 
     echo "--> Running build in isolated sandbox (bwrap)..."
-    bwrap \
+    if ! bwrap \
         --unshare-all \
         --die-with-parent \
         --new-session \
@@ -154,7 +159,11 @@ for step in $BUILD_STEPS; do
         --setenv PATH /usr/bin:/bin:/usr/sbin:/sbin \
         --setenv HOME /tmp \
         /bin/sh "/build-tmp/build-$pkg.sh" \
-        2>&1 | tee "$WAYNUX_LOGS/$log_name.log"
+        > "$WAYNUX_LOGS/$log_name.log" 2>&1; then
+        echo "[!] Build failed for $step_name! Last 50 lines of $WAYNUX_LOGS/$log_name.log:"
+        tail -n 50 "$WAYNUX_LOGS/$log_name.log"
+        exit 1
+    fi
 
     if [ ! -d "$DESTDIR_TMP/usr" ] && [ ! -d "$DESTDIR_TMP/bin" ] && [ ! -d "$DESTDIR_TMP/boot" ] && [ ! -d "$DESTDIR_TMP/sbin" ]; then
         echo "[!] Build failed for $step_name: DESTDIR is empty!"

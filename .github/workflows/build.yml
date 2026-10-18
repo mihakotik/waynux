@@ -89,8 +89,8 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
 
           # Create directories and grant user permissions
-          sudo mkdir -p /mnt/waynux /sources /logs /tmp/waynux-build
-          sudo chown -R "$USER:$USER" /mnt/waynux /sources /logs /tmp/waynux-build
+          sudo mkdir -p /mnt/waynux /sources /logs /mnt/waynux-build /var/tmp/waynux-build
+          sudo chown -R "$USER:$USER" /mnt/waynux /sources /logs /mnt/waynux-build /var/tmp/waynux-build
 
       - name: Cache source archives
         if: ${{ !inputs.clean_sources }}
