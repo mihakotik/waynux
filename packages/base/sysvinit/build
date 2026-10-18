@@ -4,7 +4,7 @@ set -e
 tar -xf /sources/sysvinit-3.08.tar.xz
 cd sysvinit-3.08
 
-make -j"$(nproc)" -C src
+make -j"$(nproc)" -C src DISTRO=Waynux
 make -C src ROOT="$DESTDIR" DISTRO=Waynux install
 
 # Remove unneeded docs
