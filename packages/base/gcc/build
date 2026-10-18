@@ -13,7 +13,7 @@ cd build
 
 if [ "$PASS" = "1" ]; then
     echo "--> GCC Pass 1: C compiler only"
-    ../configure \
+    CFLAGS="-O2" CXXFLAGS="-O2" ../configure \
         --prefix=/usr \
         --enable-languages=c \
         --disable-multilib \
@@ -25,12 +25,13 @@ if [ "$PASS" = "1" ]; then
     make DESTDIR="$DESTDIR" install
 else
     echo "--> GCC Pass 2: C and C++ compiler"
-    ../configure \
+    CFLAGS="-O2" CXXFLAGS="-O2" ../configure \
         --prefix=/usr \
         --enable-languages=c,c++ \
         --disable-multilib \
         --disable-bootstrap \
-        --disable-nls
+        --disable-nls \
+        --disable-libstdcxx-pch
     make -j"$(nproc)"
     make DESTDIR="$DESTDIR" install
 fi

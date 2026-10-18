@@ -116,8 +116,9 @@ for step in $BUILD_STEPS; do
     fi
 
     DESTDIR_TMP="$WAYNUX_BUILD_TMP/destdir-$pkg-pass$pass"
-    rm -rf "$DESTDIR_TMP"
-    mkdir -p "$DESTDIR_TMP"
+    WORK_DIR="$WAYNUX_BUILD_TMP/work-$pkg-pass$pass"
+    rm -rf "$DESTDIR_TMP" "$WORK_DIR"
+    mkdir -p "$DESTDIR_TMP" "$WORK_DIR"
     BUILD_SCRIPT="$WAYNUX_BUILD_TMP/build-$pkg.sh"
     cp "$PKG_DIR/build" "$BUILD_SCRIPT"
     chmod +x "$BUILD_SCRIPT"
@@ -141,9 +142,9 @@ for step in $BUILD_STEPS; do
         --bind "$WAYNUX_SOURCES" /sources \
         --bind "$DESTDIR_TMP" /destdir \
         --bind "$WAYNUX_BUILD_TMP" /build-tmp \
+        --bind "$WORK_DIR" /tmp \
         --proc /proc \
         --dev /dev \
-        --tmpfs /tmp \
         --tmpfs /home \
         --tmpfs /root \
         --tmpfs /var \
@@ -166,7 +167,7 @@ for step in $BUILD_STEPS; do
     echo "--> Merging $step_name into $WAYNUX_ROOT..."
     cp -a "$DESTDIR_TMP"/* "$WAYNUX_ROOT/" 2>/dev/null || true
 
-    rm -rf "$DESTDIR_TMP" "$BUILD_SCRIPT"
+    rm -rf "$DESTDIR_TMP" "$BUILD_SCRIPT" "$WORK_DIR"
 
     echo "==> $step_name completed successfully!"
 done
